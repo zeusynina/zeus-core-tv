@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>ZEUS CORE TV</title>
     <style>
+        /* RESET TOTAL PARA TV */
+        * { box-sizing: border-box; }
         body, html {
             margin: 0; padding: 0; 
             height: 100%; width: 100%;
@@ -13,14 +15,14 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* FRANJA SUPERIOR */
+        /* FRANJA SUPERIOR FIJA */
         .franja-marca {
             position: fixed;
             top: 0; left: 0;
-            width: 100%; height: 35px; 
+            width: 100%; height: 40px; 
             background: #050505;
             border-bottom: 2px solid #00f2ff;
-            display: none;
+            display: none; /* Se activa al iniciar */
             align-items: center;
             justify-content: center;
             z-index: 10005;
@@ -31,11 +33,11 @@
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 5px;
-            font-size: 13px;
+            font-size: 14px;
             text-shadow: 0 0 8px #00f2ff;
         }
 
-        /* MENU DE SELECCIÓN */
+        /* MENÚ DE SELECCIÓN */
         .overlay-inicio {
             position: fixed;
             top: 0; left: 0;
@@ -46,115 +48,89 @@
             justify-content: center;
             align-items: center;
             z-index: 10010;
-            gap: 20px;
         }
 
         .btn-zeus {
             padding: 15px 40px;
-            width: 300px;
-            font-size: 16px;
+            width: 320px;
+            font-size: 18px;
             color: #00f2ff;
             border: 2px solid #00f2ff;
-            background: rgba(0, 242, 255, 0.05);
+            background: rgba(0, 242, 255, 0.1);
             text-transform: uppercase;
             font-weight: bold;
             border-radius: 8px;
             cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
         }
 
-        /* CONTENEDOR MAESTRO DE VIDEO */
+        /* CONTENEDOR DE VIDEO: OCUPA TODO EL RESTO DE LA PANTALLA */
         .contenedor-cine {
             position: absolute;
-            top: 35px;
+            top: 40px; /* Justo debajo de la franja */
             left: 0;
-            width: 550vw;
-            height: calc(100vh - 35px);
-            display: none;
-            background: #000;
-            /* Centra el reproductor en el medio de cualquier pantalla */
-            display: none; 
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* AJUSTE DINÁMICO (Responsive) */
-        .wrapper-video {
-            position: relative;
             width: 100%;
-            height: 0;
-            /* Proporción 16:9 estándar de TV */
-            padding-bottom: 56.25%; 
-            overflow: hidden;
+            height: calc(100% - 40px);
+            background: #000;
+            display: none;
         }
 
+        /* EL REPRODUCTOR SE AJUSTA AL 100% DEL CONTENEDOR */
         iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             border: none;
+            display: block;
         }
 
-        /* EFECTO DE ZOOM SOLO PARA PC (Para quitar bordes del sitio de stream) */
-        @media (min-width: 1200px) {
-            .wrapper-video {
-                padding-bottom: 0;
-                height: 150%; /* Aumentamos altura para el recorte */
-                top: -25%;   /* Centramos el recorte */
-            }
-            iframe {
-                transform: scale(1.1); /* Zoom ligero */
-            }
-        }
-
+        /* ESCUDO ZEUS */
         #escudo-zeus {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 100;
             background: transparent;
+            display: none;
         }
 
+        /* PANEL VOLVER */
         .panel-controles {
             position: fixed;
-            top: 45px; right: 15px;
+            bottom: 20px; /* En TV es más fácil verlo abajo */
+            right: 20px;
             z-index: 10006;
             display: none;
         }
 
         .btn-volver {
-            background: rgba(10, 10, 10, 0.9);
-            color: #00f2ff;
-            border: 1px solid #00f2ff;
-            padding: 8px 18px;
+            background: rgba(10, 10, 10, 0.95);
+            color: #ff0000; /* Rojo para que resalte en la TV */
+            border: 1px solid #ff0000;
+            padding: 10px 20px;
             cursor: pointer;
-            font-size: 11px;
-            border-radius: 4px;
-            text-transform: uppercase;
+            font-weight: bold;
+            border-radius: 5px;
         }
     </style>
 </head>
 <body>
 
     <div class="franja-marca" id="barra-titulo">
-        <div class="texto-marca" id="nombre-canal-display">ZEUS CORE TV</div>
+        <div class="texto-marca" id="nombre-display">ZEUS CORE TV</div>
     </div>
 
     <div class="overlay-inicio" id="menu-canales">
-        <h2 style="color: #00f2ff; letter-spacing: 5px; margin-bottom: 20px;">ZEUS CORE SYSTEM</h2>
-        <div id="lista-botones" style="display: flex; flex-direction: column; gap: 15px;"></div>
+        <h1 style="color: #00f2ff; letter-spacing: 5px;">ZEUS CORE</h1>
+        <div id="lista-botones"></div>
     </div>
 
     <div class="panel-controles" id="controles">
-        <button class="btn-volver" onclick="window.location.reload()">🔄 VOLVER</button>
+        <button class="btn-volver" onclick="window.location.reload()">SALIR / VOLVER</button>
     </div>
 
     <div class="contenedor-cine" id="cine-display">
-        <div class="wrapper-video">
-            <div id="escudo-zeus"></div>
-            <iframe id="video-frame" src="" allow="autoplay; encrypted-media; fullscreen" scrolling="no"></iframe>
-        </div>
+        <div id="escudo-zeus"></div>
+        <iframe id="video-frame" src="" allow="autoplay; encrypted-media; fullscreen"></iframe>
     </div>
 
     <script>
@@ -171,19 +147,24 @@
             boton.className = 'btn-zeus';
             boton.innerText = canal.nombre;
             boton.onclick = () => {
+                // Pantalla completa forzada
                 const doc = document.documentElement;
                 if (doc.requestFullscreen) doc.requestFullscreen();
+                else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
                 
                 document.getElementById('menu-canales').style.display = 'none';
                 document.getElementById('barra-titulo').style.display = 'flex';
                 document.getElementById('controles').style.display = 'block';
-                document.getElementById('cine-display').style.display = 'flex'; // Usamos flex para centrar
-                document.getElementById('nombre-canal-display').innerText = `ZEUS CORE: ${canal.nombre}`;
+                document.getElementById('cine-display').style.display = 'block';
+                document.getElementById('nombre-display').innerText = `ZEUS CORE: ${canal.nombre}`;
                 
                 videoFrame.src = canal.url;
+                
+                // Activar escudo protector
                 escudo.style.display = 'block';
                 escudo.style.pointerEvents = 'none';
 
+                // Monitor de activación
                 const monitor = setInterval(() => {
                     if (document.activeElement === videoFrame) {
                         escudo.style.pointerEvents = 'auto';
