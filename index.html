@@ -24,7 +24,6 @@
             align-items: center;
             justify-content: center;
             z-index: 10005;
-            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.15);
         }
 
         .texto-marca {
@@ -48,7 +47,6 @@
             align-items: center;
             z-index: 10010;
             gap: 20px;
-            overflow-y: auto;
         }
 
         .btn-zeus {
@@ -61,18 +59,39 @@
             text-transform: uppercase;
             font-weight: bold;
             border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
             cursor: pointer;
-            transition: 0.3s;
         }
 
-        .btn-zeus:hover {
-            background: #00f2ff; color: #000;
-            box-shadow: 0 0 25px #00f2ff;
-            transform: scale(1.05);
+        /* CONTENEDOR DE VIDEO: OCUPA TODO EL ALTO RESTANTE */
+        .contenedor-cine {
+            position: absolute;
+            top: 35px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: none;
+            overflow: hidden;
+            background: #000;
         }
 
-        /* CONTROLES */
+        /* EL REPRODUCTOR: AJUSTE DINÁMICO */
+        iframe {
+            position: absolute;
+            width: 100%;
+            height: 100%; /* Inicia ocupando todo el alto */
+            top: 0;
+            left: 0;
+            border: none;
+        }
+
+        #escudo-zeus {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 100;
+            background: transparent;
+        }
+
         .panel-controles {
             position: fixed;
             top: 45px; right: 15px;
@@ -87,36 +106,8 @@
             padding: 8px 18px;
             cursor: pointer;
             font-size: 11px;
-            font-weight: bold;
             border-radius: 4px;
             text-transform: uppercase;
-        }
-
-        /* CONTENEDOR DE VIDEO DINÁMICO */
-        .contenedor-cine {
-            position: relative;
-            width: 100vw;
-            height: calc(100vh - 35px);
-            margin-top: 35px;
-            display: none;
-            overflow: hidden;
-            background: #000;
-        }
-
-        iframe {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            border: none;
-            /* El ajuste se hace por JS para que sea perfecto en cada pantalla */
-        }
-
-        #escudo-zeus {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 100;
-            background: transparent;
         }
     </style>
 </head>
@@ -132,7 +123,7 @@
     </div>
 
     <div class="panel-controles" id="controles">
-        <button class="btn-volver" onclick="window.location.reload()">🔄 VOLVER AL MENÚ</button>
+        <button class="btn-volver" onclick="window.location.reload()">🔄 VOLVER</button>
     </div>
 
     <div class="contenedor-cine" id="cine-display">
@@ -150,31 +141,20 @@
         const videoFrame = document.getElementById('video-frame');
         const escudo = document.getElementById('escudo-zeus');
 
-        // FUNCIÓN DE AUTO-AJUSTE SEGÚN RESOLUCIÓN
-        function autoAjustarPantalla() {
+        // FUNCIÓN DE AJUSTE AUTOMÁTICO PARA EVITAR EL "EFECTO RECOGIDO"
+        function ajustarParaDispositivo() {
             const ancho = window.innerWidth;
-            const alto = window.innerHeight;
-
-            // Si es PC o Pantalla Grande (ajuste que ya te gusta)
+            
             if (ancho > 1024) {
-                videoFrame.style.height = "calc(100vh + 900px)";
-                videoFrame.style.top = "-250px";
-                videoFrame.style.transform = "scale(1.6)";
-                videoFrame.style.transformOrigin = "top center";
-            } 
-            // Si es Tablet o Smart TV mediana
-            else if (ancho <= 1024 && ancho > 600) {
-                videoFrame.style.height = "140%";
-                videoFrame.style.top = "-15%";
-                videoFrame.style.transform = "scale(1.2)";
-                videoFrame.style.transformOrigin = "center center";
-            }
-            // Si es Celular
-            else {
+                // Configuración para PC (mantiene tu estilo favorito)
+                videoFrame.style.height = "170%";
+                videoFrame.style.top = "-35%";
+                videoFrame.style.transform = "scale(1.1)";
+            } else {
+                // Configuración para TV y Móvil (Pantalla Completa Real)
                 videoFrame.style.height = "100%";
                 videoFrame.style.top = "0";
                 videoFrame.style.transform = "scale(1.0)";
-                videoFrame.style.transformOrigin = "center center";
             }
         }
 
@@ -182,37 +162,32 @@
             const boton = document.createElement('button');
             boton.className = 'btn-zeus';
             boton.innerText = canal.nombre;
-            boton.onclick = () => iniciarCanal(canal.url, canal.nombre);
+            boton.onclick = () => {
+                const doc = document.documentElement;
+                if (doc.requestFullscreen) doc.requestFullscreen();
+                
+                document.getElementById('menu-canales').style.display = 'none';
+                document.getElementById('barra-titulo').style.display = 'flex';
+                document.getElementById('controles').style.display = 'block';
+                document.getElementById('cine-display').style.display = 'block';
+                
+                ajustarParaDispositivo();
+                videoFrame.src = canal.url;
+                
+                escudo.style.display = 'block';
+                escudo.style.pointerEvents = 'none';
+
+                const monitor = setInterval(() => {
+                    if (document.activeElement === videoFrame) {
+                        escudo.style.pointerEvents = 'auto';
+                        clearInterval(monitor);
+                    }
+                }, 100);
+            };
             document.getElementById('lista-botones').appendChild(boton);
         });
 
-        function iniciarCanal(url, nombre) {
-            const doc = document.documentElement;
-            if (doc.requestFullscreen) doc.requestFullscreen();
-            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
-            
-            document.getElementById('menu-canales').style.display = 'none';
-            document.getElementById('barra-titulo').style.display = 'flex';
-            document.getElementById('controles').style.display = 'block';
-            document.getElementById('cine-display').style.display = 'block';
-            document.getElementById('nombre-canal-display').innerText = `ZEUS CORE: ${nombre}`;
-            
-            autoAjustarPantalla();
-            videoFrame.src = url;
-            
-            escudo.style.display = 'block';
-            escudo.style.pointerEvents = 'none';
-
-            const monitor = setInterval(() => {
-                if (document.activeElement === videoFrame) {
-                    escudo.style.pointerEvents = 'auto';
-                    clearInterval(monitor);
-                }
-            }, 100);
-        }
-
-        // Re-ajustar si se gira el dispositivo o cambia el tamaño
-        window.onresize = autoAjustarPantalla;
+        window.onresize = ajustarParaDispositivo;
     </script>
 </body>
 </html>
