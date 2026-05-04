@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZEUS CORE TV</title>
     <style>
         body, html {
@@ -13,98 +13,93 @@
             font-family: 'Segoe UI', sans-serif;
         }
 
-        /* FRANJA SUPERIOR */
+        /* --- LA FRANJA NEGRA DE MARCA --- */
         .franja-marca {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 35px; 
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 35px; 
             background: #050505;
             border-bottom: 2px solid #00f2ff;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10005;
+            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.15);
         }
 
         .texto-marca {
             color: #00f2ff;
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 5px;
+            letter-spacing: 6px;
             font-size: 13px;
             text-shadow: 0 0 8px #00f2ff;
         }
 
-        /* MENU INICIAL */
+        /* CAPA DE INICIO */
         .overlay-inicio {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
             background: #000; 
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 10010;
-            gap: 15px;
         }
 
         .btn-zeus {
-            padding: 15px 40px;
-            width: 320px;
-            font-size: 16px;
+            padding: 20px 50px;
+            font-size: 20px;
             color: #00f2ff;
             border: 2px solid #00f2ff;
-            background: rgba(0, 242, 255, 0.05);
+            background: none;
             text-transform: uppercase;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px #00f2ff;
             cursor: pointer;
         }
 
-        /* CONTENEDOR DE VIDEO */
+        /* BOTÓN VOLVER */
+        .panel-controles {
+            position: fixed;
+            top: 45px; 
+            right: 15px;
+            z-index: 10006;
+        }
+
+        .btn-volver {
+            background: rgba(10, 10, 10, 0.9);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* CONTENEDOR Y REPRODUCTOR */
         .contenedor-cine {
             position: relative;
             width: 100vw;
-            height: calc(100vh - 35px);
+            height: 100vh;
             margin-top: 35px;
-            display: none;
-            overflow: hidden;
-            background: #000;
         }
 
-        /* IFRAME: Sin valores fijos iniciales */
         iframe {
             position: absolute;
+            top: -550px; 
             left: 0;
-            border: none;
             width: 100%;
-            height: 100%;
-        }
-
-        /* BOTONES DE AJUSTE RÁPIDO PARA TV */
-        .selector-ajuste {
-            position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            z-index: 10007;
-            gap: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border-radius: 20px;
-            border: 1px solid #00f2ff;
-        }
-
-        .btn-modo {
-            background: #000;
-            color: #00f2ff;
-            border: 1px solid #00f2ff;
-            padding: 5px 15px;
-            border-radius: 15px;
-            font-size: 10px;
-            cursor: pointer;
+            height: calc(100vh + 900px); 
+            transform: scale(1.6); 
+            transform-origin: top center;
+            border: none;
         }
 
         #escudo-zeus {
@@ -112,104 +107,58 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 100;
-        }
-
-        .panel-controles {
-            position: fixed;
-            top: 45px; right: 15px;
-            z-index: 10006;
             display: none;
-        }
-
-        .btn-volver {
-            background: rgba(10, 10, 10, 0.9);
-            color: #ff4444;
-            border: 1px solid #ff4444;
-            padding: 8px 18px;
-            cursor: pointer;
-            font-size: 11px;
-            border-radius: 4px;
         }
     </style>
 </head>
 <body>
 
-    <div class="franja-marca" id="barra-titulo">
-        <div class="texto-marca" id="nombre-display">ZEUS CORE TV</div>
+    <!-- Franja Superior ZEUS -->
+    <div class="franja-marca" id="barra-titulo" style="display: none;">
+        <div class="texto-marca">ZEUS CORE TV</div>
     </div>
 
-    <div class="overlay-inicio" id="menu">
-        <h2 style="color: #00f2ff; letter-spacing: 5px;">ZEUS CORE SYSTEM</h2>
-        <div id="lista-botones" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <div class="panel-controles" id="controles" style="display: none;">
+        <button class="btn-volver" onclick="window.location.reload()">volver</button>
     </div>
 
-    <!-- Selector de emergencia si se ve negro -->
-    <div class="selector-ajuste" id="selector">
-        <button class="btn-modo" onclick="aplicarModo('pc')">MODO PC (RECORTE)</button>
-        <button class="btn-modo" onclick="aplicarModo('tv')">MODO TV (PANTALLA COMPLETA)</button>
+    <div class="overlay-inicio" id="bloqueo">
+        <button class="btn-zeus" onclick="iniciar()">CONECTAR ZEUS CORE</button>
     </div>
 
-    <div class="panel-controles" id="controles">
-        <button class="btn-volver" onclick="window.location.reload()">🔄 VOLVER</button>
-    </div>
-
-    <div class="contenedor-cine" id="cine-display">
+    <div class="contenedor-cine">
         <div id="escudo-zeus"></div>
-        <iframe id="video-frame" src="" allow="autoplay; encrypted-media; fullscreen" scrolling="no"></iframe>
+        <iframe 
+            id="video-frame"
+            src="https://futbol-libre.su/win-sports-premium/" 
+            allow="autoplay; encrypted-media; fullscreen"
+            sandbox="allow-forms allow-scripts allow-same-origin allow-presentation"
+            scrolling="no">
+        </iframe>
     </div>
 
     <script>
-        const canales = [
-            { nombre: "Win Sports Premium", url: "https://futbol-libre.su/win-sports-premium/" }
-        ];
-
-        const videoFrame = document.getElementById('video-frame');
         const escudo = document.getElementById('escudo-zeus');
 
-        function aplicarModo(tipo) {
-            const h = window.innerHeight;
-            if (tipo === 'pc') {
-                videoFrame.style.height = "170%";
-                videoFrame.style.top = "-35%";
-                videoFrame.style.transform = "scale(1.1)";
-            } else {
-                // Modo TV: Forzar visualización limpia para evitar pantalla negra
-                videoFrame.style.height = "100%";
-                videoFrame.style.top = "0";
-                videoFrame.style.transform = "scale(1.0)";
-            }
+        function iniciar() {
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+            
+            document.getElementById('bloqueo').style.display = 'none';
+            document.getElementById('controles').style.display = 'block';
+            document.getElementById('barra-titulo').style.display = 'flex';
+            
+            escudo.style.display = 'block';
+            escudo.style.pointerEvents = 'none';
+
+            const monitor = setInterval(() => {
+                if (document.activeElement === document.getElementById('video-frame')) {
+                    escudo.style.pointerEvents = 'auto';
+                    clearInterval(monitor);
+                }
+            }, 100);
         }
-
-        canales.forEach((canal) => {
-            const boton = document.createElement('button');
-            boton.className = 'btn-zeus';
-            boton.innerText = canal.nombre;
-            boton.onclick = () => {
-                const doc = document.documentElement;
-                if (doc.requestFullscreen) doc.requestFullscreen();
-                
-                document.getElementById('menu').style.display = 'none';
-                document.getElementById('barra-titulo').style.display = 'flex';
-                document.getElementById('controles').style.display = 'block';
-                document.getElementById('selector').style.display = 'flex';
-                document.getElementById('cine-display').style.display = 'block';
-                
-                // Por defecto iniciamos en Modo TV para asegurar que se vea
-                aplicarModo('tv');
-                videoFrame.src = canal.url;
-                
-                escudo.style.display = 'block';
-                escudo.style.pointerEvents = 'none';
-
-                const monitor = setInterval(() => {
-                    if (document.activeElement === videoFrame) {
-                        escudo.style.pointerEvents = 'auto';
-                        clearInterval(monitor);
-                    }
-                }, 100);
-            };
-            document.getElementById('lista-botones').appendChild(boton);
-        });
     </script>
 </body>
 </html>
