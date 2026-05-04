@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZEUS CORE TV - Multi-Link</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0; 
+            height: 100%; width: 100%;
+            background-color: #000; 
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* FRANJA SUPERIOR */
+        .franja-marca {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 35px; 
+            background: #050505;
+            border-bottom: 2px solid #00f2ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10005;
+            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.15);
+            display: none; /* Se activa al elegir canal */
+        }
+
+        .texto-marca {
+            color: #00f2ff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            font-size: 13px;
+            text-shadow: 0 0 8px #00f2ff;
+        }
+
+        /* MENU DE SELECCIÓN DE CANALES */
+        .overlay-inicio {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10010;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        /* BOTONES AUTOMÁTICOS */
+        .btn-zeus {
+            padding: 15px 40px;
+            width: 300px;
+            font-size: 16px;
+            color: #00f2ff;
+            border: 2px solid #00f2ff;
+            background: rgba(0, 242, 255, 0.05);
+            text-transform: uppercase;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-zeus:hover {
+            background: #00f2ff;
+            color: #000;
+            box-shadow: 0 0 25px #00f2ff;
+            transform: scale(1.05);
+        }
+
+        /* BOTÓN VOLVER */
+        .panel-controles {
+            position: fixed;
+            top: 45px; 
+            right: 15px;
+            z-index: 10006;
+            display: none;
+        }
+
+        .btn-volver {
+            background: rgba(10, 10, 10, 0.9);
+            color: #00f2ff;
+            border: 1px solid #00f2ff;
+            padding: 8px 18px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        /* CONTENEDOR DE VIDEO */
+        .contenedor-cine {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            margin-top: 35px;
+            display: none; /* Se activa al elegir canal */
+        }
+
+        iframe {
+            position: absolute;
+            top: -250px; 
+            left: 0;
+            width: 100%;
+            height: calc(100vh + 900px); 
+            transform: scale(1.6); 
+            transform-origin: top center;
+            border: none;
+        }
+
+        #escudo-zeus {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 100;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Franja Superior -->
+    <div class="franja-marca" id="barra-titulo">
+        <div class="texto-marca" id="nombre-canal-display">ZEUS STREEM TV</div>
+    </div>
+
+    <!-- Menú de Canales (Se llena solo) -->
+    <div class="overlay-inicio" id="menu-canales">
+        <h2 style="color: #00f2ff; letter-spacing: 5px; margin-bottom: 20px;">SELECCIONAR CANAL</h2>
+        <div id="lista-botones" style="display: flex; flex-direction: column; gap: 15px;"></div>
+    </div>
+
+    <!-- Controles -->
+    <div class="panel-controles" id="controles">
+        <button class="btn-volver" onclick="window.location.reload()">🔄 VOLVER AL MENÚ</button>
+    </div>
+
+    <!-- Área de Video -->
+    <div class="contenedor-cine" id="cine-display">
+        <div id="escudo-zeus" style="display: none;"></div>
+        <iframe id="video-frame" src="" allow="autoplay; encrypted-media; fullscreen" sandbox="allow-forms allow-scripts allow-same-origin allow-presentation" scrolling="no"></iframe>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DE CANALES ---
+        // Aquí puedes agregar todos los que quieras siguiendo el formato
+        const canales = [
+            { nombre: "Win Sports Plus", url: "https://futbol-libre.su/win-sports-premium/" },
+            { nombre: "fox sports", url: "https://futbol-libre.su/fox-sports/" },
+            { nombre: "ESPN", url: "https://futbol-libre.su/espn-1/" }
+        ];
+
+        const listaBotones = document.getElementById('lista-botones');
+        const videoFrame = document.getElementById('video-frame');
+        const escudo = document.getElementById('escudo-zeus');
+
+        // Función que crea los botones automáticamente
+        canales.forEach((canal, index) => {
+            const boton = document.createElement('button');
+            boton.className = 'btn-zeus';
+            boton.innerText = canal.nombre;
+            boton.onclick = () => iniciarCanal(canal.url, canal.nombre);
+            listaBotones.appendChild(boton);
+        });
+
+        function iniciarCanal(url, nombre) {
+            // Pantalla completa
+            const doc = document.documentElement;
+            if (doc.requestFullscreen) doc.requestFullscreen();
+            
+            // Cambiar visibilidad
+            document.getElementById('menu-canales').style.display = 'none';
+            document.getElementById('barra-titulo').style.display = 'flex';
+            document.getElementById('controles').style.display = 'block';
+            document.getElementById('cine-display').style.display = 'block';
+            document.getElementById('nombre-canal-display').innerText = `ZEUS CORE: ${nombre}`;
+            
+            // Cargar URL
+            videoFrame.src = url;
+            
+            // Activar escudo protector
+            escudo.style.display = 'block';
+            escudo.style.pointerEvents = 'none';
+
+            // Monitor de clic para blindaje
+            const monitor = setInterval(() => {
+                if (document.activeElement === videoFrame) {
+                    escudo.style.pointerEvents = 'auto';
+                    clearInterval(monitor);
+                }
+            }, 100);
+        }
+    </script>
+</body>
+</html>
