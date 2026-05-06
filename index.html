@@ -21,7 +21,7 @@ body, html {
 /* APP */
 .app {
     display: flex;
-    height: 100dvh;
+    height: 100vh;
 }
 
 /* SIDEBAR */
@@ -31,7 +31,6 @@ body, html {
     border-right: 2px solid #00f2ff;
     padding: 15px;
     overflow-y: auto;
-    transition: 0.3s;
 }
 
 .sidebar h2 {
@@ -56,7 +55,7 @@ body, html {
     position: relative;
 }
 
-/* 🎬 VIDEO AHORA DEJA ESPACIO ABAJO */
+/* VIDEO */
 iframe {
     position: absolute;
     top: 0;
@@ -66,30 +65,46 @@ iframe {
     border: none;
 }
 
-/* 📺 MODO TV */
+/* 📺 MODO TV MÁS COMPATIBLE */
 .tv-mode iframe {
-    top: -120px;
-    height: calc(100% - 100px + 250px);
-    transform: scale(1.2);
-    transform-origin: top center;
+    top: -150px;
+    height: calc(100% + 300px);
 }
 
-/* 🔽 FRANJA DEBAJO DEL REPRODUCTOR */
+/* FRANJA ARRIBA */
+#franja-oculta {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    height: 160px;
+    background: black;
+    z-index: 8;
+    pointer-events: none;
+}
+
+/* FRANJA ABAJO */
 #franja-player {
     position: absolute;
     bottom: 0;
-    left: 0;
     width: 100%;
-    height: 70px;
+    height: 100px;
     background: black;
     z-index: 7;
+}
+
+/* BLOQUEADOR */
+#bloqueador {
+    position: absolute;
+    top: 40px;
+    width: 100%;
+    height: calc(100% - 40px);
+    z-index: 9;
 }
 
 /* TOPBAR */
 .topbar {
     position: absolute;
     top: 0;
-    left: 0;
     width: 100%;
     height: 40px;
     background: rgba(0,0,0,0.85);
@@ -105,43 +120,28 @@ iframe {
     font-size: 12px;
 }
 
-/* CONTROLES */
 .controles {
     display: flex;
-    gap: 6px;
+    gap: 5px;
 }
 
 select, button {
     background: black;
     border: 1px solid #00f2ff;
     color: #00f2ff;
+    cursor: pointer;
 }
 
-/* BLOQUEADOR */
-#bloqueador {
+/* BOTÓN FALLBACK */
+#abrirDirecto {
+    display: none;
     position: absolute;
-    top: 40px;
-    width: 100%;
-    height: calc(100% - 40px);
-    z-index: 9;
-}
-
-/* FRANJA SUPERIOR */
-#franja-oculta {
-    position: absolute;
-    top: 20px;
-    width: 100%;
-    height: 160px;
-    background: black;
-    z-index: 8;
-    pointer-events: none;
+    bottom: 120px;
+    left: 20px;
+    z-index: 20;
 }
 
 /* MOBILE */
-.menu-btn {
-    display: none;
-}
-
 @media(max-width:768px){
     .sidebar {
         position: absolute;
@@ -149,14 +149,8 @@ select, button {
         height: 100%;
         z-index: 20;
     }
-
     .sidebar.active {
         left: 0;
-    }
-
-    .menu-btn {
-        display: block;
-        cursor: pointer;
     }
 }
 </style>
@@ -172,50 +166,49 @@ select, button {
 <div class="main">
 
 <div class="topbar">
+    <div class="titulo" id="titulo">ZEUS TV</div>
     <div class="controles">
-        <span class="menu-btn" onclick="toggleMenu()">☰</span>
-        <div class="titulo" id="titulo">ZEUS TV</div>
+        <select id="calidad">
+            <option value="auto">AUTO</option>
+            <option value="sd">SD</option>
+            <option value="hd">HD</option>
+        </select>
+        <button onclick="permitirClicks()">INTERACTUAR</button>
+        <button onclick="volver()">VOLVER</button>
     </div>
-
-```
-<div class="controles">
-    <select id="calidad">
-        <option value="auto">AUTO</option>
-        <option value="sd">SD</option>
-        <option value="hd">HD</option>
-    </select>
-    <button onclick="permitirClicks()">INTERACTUAR</button>
-    <button onclick="volver()">VOLVER</button>
-</div>
-```
-
 </div>
 
 <div id="bloqueador"></div>
 <div id="franja-oculta"></div>
-
-<!-- 🎬 PLAYER -->
 
 <iframe id="player"
 sandbox="allow-scripts allow-same-origin allow-presentation"
 allow="autoplay; fullscreen">
 </iframe>
 
-<!-- 🔽 FRANJA INFERIOR REAL -->
-
 <div id="franja-player"></div>
+
+<button id="abrirDirecto">Abrir canal directo</button>
 
 </div>
 </div>
 
 <script>
 
-/* DETECTAR TV */
+/* DETECCIÓN TV MEJORADA */
 function detectarTV() {
-    const ancho = window.innerWidth;
     const ua = navigator.userAgent.toLowerCase();
 
-    if (ancho > 1200 || ua.includes("smarttv") || ua.includes("tizen") || ua.includes("webos")) {
+    if (
+        ua.includes("smarttv") ||
+        ua.includes("tizen") ||
+        ua.includes("webos") ||
+        ua.includes("netcast") ||
+        ua.includes("viera") ||
+        ua.includes("appletv") ||
+        ua.includes("hbbtv") ||
+        window.innerWidth > 1300
+    ) {
         document.getElementById("app").classList.add("tv-mode");
     }
 }
@@ -261,6 +254,7 @@ const player = document.getElementById("player");
 const titulo = document.getElementById("titulo");
 const calidad = document.getElementById("calidad");
 const bloqueador = document.getElementById("bloqueador");
+const btnDirecto = document.getElementById("abrirDirecto");
 
 let canalActual = null;
 
@@ -279,7 +273,6 @@ for (let cat in data) {
         btn.onclick = () => {
             canalActual = c;
             cargar();
-            cerrarMenu();
         };
 
         cont.appendChild(btn);
@@ -292,9 +285,18 @@ for (let cat in data) {
 function cargar(){
     if(!canalActual) return;
 
-    player.src = canalActual.urls[calidad.value];
-    titulo.innerText = canalActual.nombre + " (" + calidad.value + ")";
+    let url = canalActual.urls[calidad.value];
+    player.src = url;
+
+    titulo.innerText = canalActual.nombre;
+
     bloqueador.style.pointerEvents = "auto";
+
+    /* fallback */
+    btnDirecto.style.display = "block";
+    btnDirecto.onclick = () => {
+        window.location.href = url;
+    };
 }
 
 /* CALIDAD */
@@ -308,16 +310,9 @@ function permitirClicks(){
 /* VOLVER */
 function volver(){
     player.src = "";
-    canalActual = null;
     titulo.innerText = "ZEUS TV";
-}
-
-/* MENU */
-function toggleMenu(){
-    sidebar.classList.toggle("active");
-}
-function cerrarMenu(){
-    sidebar.classList.remove("active");
+    canalActual = null;
+    btnDirecto.style.display = "none";
 }
 
 </script>
