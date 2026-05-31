@@ -1,0 +1,1846 @@
+[INVENTARIO JC.html](https://github.com/user-attachments/files/28433744/INVENTARIO.JC.html)
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>IMPRESIONARTE J/C </title>
+
+<style>
+
+#loginScreen{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#0f172a;
+display:flex;
+justify-content:center;
+align-items:center;
+z-index:9999;
+}
+
+.login-box{
+background:#1e293b;
+padding:40px;
+border-radius:20px;
+width:350px;
+text-align:center;
+box-shadow:0 0 20px rgba(0,0,0,.5);
+}
+
+.error-login{
+color:#ef4444;
+margin-top:10px;
+}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Segoe UI,sans-serif;
+}
+
+body{
+background:#0f172a;
+color:white;
+display:flex;
+min-height:100vh;
+}
+
+.sidebar{
+width:240px;
+background:#111827;
+padding:20px;
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.sidebar h2{
+text-align:center;
+margin-bottom:20px;
+}
+
+.sidebar button{
+padding:14px;
+border:none;
+border-radius:12px;
+background:#1e293b;
+color:white;
+cursor:pointer;
+font-weight:bold;
+}
+
+.sidebar button:hover{
+background:#2563eb;
+}
+
+.main{
+flex:1;
+padding:20px;
+overflow:auto;
+}
+
+.ventana{
+display:none;
+}
+
+.ventana.activa{
+display:block;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+}
+
+.box{
+background:#1e293b;
+padding:20px;
+border-radius:18px;
+text-align:center;
+}
+
+.box p{
+font-size:28px;
+font-weight:bold;
+margin-top:10px;
+}
+
+.card{
+background:#1e293b;
+padding:20px;
+border-radius:20px;
+margin-bottom:20px;
+}
+
+input,select,button{
+width:100%;
+padding:12px;
+margin-top:10px;
+border:none;
+border-radius:10px;
+}
+
+input,select{
+background:#e2e8f0;
+color:black;
+}
+
+.btn{
+background:#2563eb;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btn-danger{
+background:#dc2626;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btn-warning{
+background:#f59e0b;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.btn-success{
+background:#16a34a;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+
+th{
+background:#2563eb;
+padding:10px;
+}
+
+td{
+background:#334155;
+padding:10px;
+text-align:center;
+}
+
+.total{
+background:#1d4ed8;
+padding:15px;
+border-radius:10px;
+margin-top:15px;
+font-size:22px;
+text-align:center;
+}
+
+.alerta td{
+background:#7f1d1d;
+}
+
+#resultado{
+background:#166534;
+padding:15px;
+margin-top:15px;
+border-radius:10px;
+line-height:1.8;
+}
+
+@media(max-width:900px){
+
+body{
+flex-direction:column;
+}
+
+.sidebar{
+width:100%;
+overflow:auto;
+flex-direction:row;
+}
+
+.sidebar h2{
+display:none;
+}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- 🔥 FIREBASE AQUÍ (NUEVO) -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAavTnlvSPusMzwRjtx9qF42Uh8XcgmnIM",
+  authDomain: "impresionarte-pos.firebaseapp.com",
+  projectId: "impresionarte-pos",
+  storageBucket: "impresionarte-pos.firebasestorage.app",
+  messagingSenderId: "693788496493",
+  appId: "1:693788496493:web:efd1a9d2f166b38f092564"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const colInventario = collection(db, "inventario");
+
+async function cargarInventarioFirebase() {
+  const snapshot = await getDocs(colInventario);
+
+  inventario = [];
+
+  snapshot.forEach(docSnap => {
+    inventario.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
+  actualizarProductos(); // 🔥 IMPORTANTE
+
+  console.log("🔥 Firebase conectado");
+}
+
+window.cargarInventarioFirebase = cargarInventarioFirebase;
+
+window.guardarProductoFirebase = async function(producto){
+  await addDoc(colInventario, producto);
+};
+
+</script>
+<div id="loginScreen">
+
+<div class="login-box">
+
+<h1>🎨 IMPRESIONARTE</h1>
+
+<p>Ingrese la contraseña</p>
+
+<input
+type="password"
+id="passwordLogin"
+placeholder="Contraseña">
+
+<button
+class="btn"
+onclick="iniciarSesion()">
+🔓 Ingresar
+</button>
+
+<p id="errorLogin" class="error-login"></p>
+
+</div>
+
+</div>
+
+<div class="sidebar">
+
+<h2>🎨 IMPRESIONARTE </h2>
+
+<button onclick="abrirVentana('inicio')">
+🏠 Inicio
+</button>
+
+<button onclick="abrirVentana('inventario')">
+📦 Inventario
+</button>
+
+<button onclick="abrirVentana('insumos')">
+🧪 Insumos
+</button>
+
+<button onclick="abrirVentana('ventas')">
+🛒 Ventas
+</button>
+
+<button onclick="abrirVentana('proveedores')">
+🚚 Proveedores
+</button>
+
+<button onclick="abrirVentana('historial')">
+📜 Historial
+</button>
+
+<button onclick="abrirVentana('cierres')">
+🏦 Cierres
+</button>
+
+</div>
+
+<div class="main">
+
+<!-- INICIO -->
+
+<div id="inicio" class="ventana activa">
+
+<div class="grid">
+
+<div class="box">
+<h3>Productos</h3>
+<p id="resumenProductos">0</p>
+</div>
+
+<div class="box">
+<h3>Ventas Totales</h3>
+<p id="resumenVentas">0</p>
+</div>
+
+<div class="box">
+<h3>Total Vendido</h3>
+<p id="resumenTotal">$0</p>
+</div>
+
+<div class="box">
+<h3>Ganancia Total</h3>
+<p id="resumenGanancia">$0</p>
+</div>
+
+<div class="box">
+<h3>Ventas del Día</h3>
+<p id="ventasDia">$0</p>
+</div>
+
+<div class="box">
+<h3>Ganancia del Día</h3>
+<p id="gananciaDia">$0</p>
+</div>
+
+<div class="box">
+<h3>Proveedores</h3>
+<p id="resumenProveedores">0</p>
+</div>
+
+<div class="box">
+<h3>Caja Actual</h3>
+<p id="cajaActual">$0</p>
+</div>
+
+</div>
+
+</div>
+
+<!-- INVENTARIO -->
+
+<div id="inventario" class="ventana">
+
+<div class="card">
+
+<h2>📦 Inventario</h2>
+
+<input type="text" id="buscar" placeholder="Buscar producto">
+
+<input type="text" id="nombre" placeholder="Nombre producto">
+
+<input type="number" id="cantidad" placeholder="Cantidad">
+
+<input type="number" id="compra" placeholder="Precio compra">
+
+<input type="number" id="venta" placeholder="Precio venta">
+
+<button class="btn" id="btnAgregar">
+➕ Agregar Producto
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Producto</th>
+<th>Stock</th>
+<th>Venta</th>
+<th>Ganancia</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="tablaProductos"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- INSUMOS -->
+
+<div id="insumos" class="ventana">
+
+<div class="card">
+
+<h2>🧪 Control de Insumos Sublimación</h2>
+
+<input type="text" id="codigoInsumo" placeholder="Código">
+
+<input type="text" id="nombreInsumo" placeholder="Nombre del insumo">
+
+<input type="number" id="stockInsumo" placeholder="Cantidad">
+
+<input type="number" id="costoInsumo" placeholder="Costo Unitario">
+
+<select id="unidadInsumo">
+<option value="unidades">Unidades</option>
+<option value="metros">Metros</option>
+<option value="cm">Centímetros</option>
+<option value="hojas">Hojas</option>
+<option value="ml">Mililitros</option>
+<option value="gramos">Gramos</option>
+</select>
+
+<button class="btn" onclick="agregarInsumo()">
+➕ Guardar Insumo
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Código</th>
+<th>Insumo</th>
+<th>Stock</th>
+<th>Costo</th>
+<th>Total</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="tablaInsumos"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- VENTAS -->
+
+<div id="ventas" class="ventana">
+
+<div class="card">
+
+<h2>🛒 Ventas</h2>
+
+<select id="productoVenta"></select>
+
+<input type="number" id="cantidadVenta" placeholder="Cantidad vender">
+
+<button class="btn" id="btnAgregarVenta">
+🛒 Agregar a Venta
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Producto</th>
+<th>Cantidad</th>
+<th>Subtotal</th>
+</tr>
+</thead>
+
+<tbody id="tablaVenta"></tbody>
+
+</table>
+
+<div class="total" id="totalVenta">
+Total: $0
+</div>
+
+<input type="number" id="pago" placeholder="Dinero recibido">
+
+<button class="btn-success" id="btnFinalizar">
+💵 Finalizar Venta
+</button>
+
+<button class="btn-warning" onclick="imprimirFactura()">
+🧾 Imprimir Factura
+</button>
+
+<button class="btn-danger" onclick="limpiarVentas()">
+🧹 Limpiar Venta
+</button>
+
+<div id="resultado"></div>
+
+</div>
+
+</div>
+
+<!-- PROVEEDORES -->
+
+<div id="proveedores" class="ventana">
+
+<div class="card">
+
+<h2>🚚 Proveedores</h2>
+
+<input type="text" id="nombreProveedor" placeholder="Nombre proveedor">
+
+<input type="text" id="telefonoProveedor" placeholder="Teléfono">
+
+<button class="btn" onclick="agregarProveedor()">
+➕ Guardar Proveedor
+</button>
+
+<hr style="margin:20px 0;opacity:.2;">
+
+<h2>📦 Entrada de Productos</h2>
+
+<select id="selectProveedor"></select>
+
+<input type="text" id="nuevoProducto" placeholder="Producto recibido">
+
+<input type="number" id="cantidadNueva" placeholder="Cantidad recibida">
+
+<input type="number" id="costoNuevo" placeholder="Costo compra">
+
+<input type="number" id="ventaNueva" placeholder="Precio venta">
+
+<button class="btn-success" onclick="registrarEntrada()">
+📥 Registrar Entrada
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Proveedor</th>
+<th>Producto</th>
+<th>Cantidad</th>
+<th>Fecha</th>
+</tr>
+</thead>
+
+<tbody id="tablaEntradas"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- HISTORIAL -->
+
+<div id="historial" class="ventana">
+
+<div class="card">
+
+<h2>📜 Historial de Ventas</h2>
+
+<button class="btn-danger" onclick="limpiarHistorial()">
+🗑 Limpiar Historial
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Total</th>
+<th>Pago</th>
+<th>Cambio</th>
+<th>Ganancia</th>
+</tr>
+</thead>
+
+<tbody id="tablaHistorial"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+<!-- CIERRES -->
+
+<div id="cierres" class="ventana">
+
+<div class="card">
+
+<h2>🏦 Cierre de Caja</h2>
+
+<button class="btn-success" onclick="cerrarCaja()">
+🏦 Realizar Cierre
+</button>
+
+<button class="btn-danger" onclick="reiniciarTodo()">
+♻ Reiniciar Sistema
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Ventas</th>
+<th>Ganancia</th>
+<th>Caja</th>
+</tr>
+</thead>
+
+<tbody id="tablaCierres"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+// =====================
+// LOGIN
+// =====================
+
+const PASSWORD_SISTEMA = "matias";
+
+function iniciarSesion(){
+
+const clave =
+document.getElementById(
+'passwordLogin'
+).value;
+
+if(clave === PASSWORD_SISTEMA){
+
+document.getElementById(
+'loginScreen'
+).style.display = 'none';
+
+}else{
+
+document.getElementById(
+'errorLogin'
+).textContent =
+'❌ Contraseña incorrecta';
+
+}
+
+}
+
+document.addEventListener(
+'keydown',
+function(e){
+
+if(e.key === 'Enter'){
+
+const login =
+document.getElementById(
+'loginScreen'
+);
+
+if(login &&
+login.style.display !== 'none'){
+
+iniciarSesion();
+
+}
+
+}
+
+});
+
+// =====================
+// VARIABLES
+// =====================
+
+let inventario = [];
+
+let historial =
+JSON.parse(localStorage.getItem('ventasPro')) || [];
+
+let proveedores =
+JSON.parse(localStorage.getItem('proveedoresPro')) || [];
+
+let entradas =
+JSON.parse(localStorage.getItem('entradasPro')) || [];
+
+let cierres =
+JSON.parse(localStorage.getItem('cierresPro')) || [];
+
+let cajaDia =
+JSON.parse(localStorage.getItem('cajaDia')) || {
+ventas:0,
+ganancia:0,
+caja:0
+};
+
+let carrito = [];
+
+let ultimaVentaProductos = [];
+
+let editando = -1;
+
+let insumos =
+JSON.parse(localStorage.getItem('insumosPro')) || [];
+
+let editandoInsumo = -1;
+
+// =====================
+// VENTANAS
+// =====================
+
+function abrirVentana(id){
+
+document.querySelectorAll('.ventana')
+.forEach(v=>v.classList.remove('activa'));
+
+document.getElementById(id)
+.classList.add('activa');
+
+}
+
+// =====================
+// GUARDAR
+// =====================
+
+async function guardarProductoFirebase(producto){
+  try {
+    await addDoc(colInventario, producto);
+  } catch (e) {
+    console.error("Error guardando en Firebase:", e);
+  }
+}
+
+function guardar(){
+
+localStorage.setItem(
+'insumosPro',
+JSON.stringify(insumos)
+);
+
+localStorage.setItem(
+'inventarioPro',
+JSON.stringify(inventario)
+);
+
+localStorage.setItem(
+'ventasPro',
+JSON.stringify(historial)
+);
+
+localStorage.setItem(
+'proveedoresPro',
+JSON.stringify(proveedores)
+);
+
+localStorage.setItem(
+'entradasPro',
+JSON.stringify(entradas)
+);
+
+localStorage.setItem(
+'cierresPro',
+JSON.stringify(cierres)
+);
+
+localStorage.setItem(
+'cajaDia',
+JSON.stringify(cajaDia)
+);
+
+}
+
+// =====================
+// RESUMEN
+// =====================
+
+function actualizarResumen(){
+
+document.getElementById(
+'resumenProductos'
+).textContent =
+inventario.length;
+
+document.getElementById(
+'resumenVentas'
+).textContent =
+historial.length;
+
+document.getElementById(
+'resumenProveedores'
+).textContent =
+proveedores.length;
+
+let total = 0;
+let ganancia = 0;
+
+historial.forEach(v=>{
+
+total += Number(v.total || 0);
+
+ganancia += Number(v.utilidad || 0);
+
+});
+
+document.getElementById(
+'resumenTotal'
+).textContent =
+'$'+total.toFixed(2);
+
+document.getElementById(
+'resumenGanancia'
+).textContent =
+'$'+ganancia.toFixed(2);
+
+document.getElementById(
+'ventasDia'
+).textContent =
+'$'+cajaDia.ventas.toFixed(2);
+
+document.getElementById(
+'gananciaDia'
+).textContent =
+'$'+cajaDia.ganancia.toFixed(2);
+
+document.getElementById(
+'cajaActual'
+).textContent =
+'$'+cajaDia.caja.toFixed(2);
+
+}
+
+// =====================
+// INSUMOS
+// =====================
+
+function actualizarInsumos(){
+
+const tabla =
+document.getElementById('tablaInsumos');
+
+if(!tabla) return;
+
+tabla.innerHTML='';
+
+insumos.forEach((i,index)=>{
+
+const fila =
+document.createElement('tr');
+
+const total =
+i.stock * i.costo;
+
+fila.innerHTML = `
+<td>${i.codigo}</td>
+<td>${i.nombre}</td>
+<td>${i.stock} ${i.unidad}</td>
+<td>$${i.costo.toFixed(2)}</td>
+<td>$${total.toFixed(2)}</td>
+
+<td>
+
+<button class="btn-warning"
+onclick="editarInsumo(${index})">
+✏️
+</button>
+
+<button class="btn-danger"
+onclick="eliminarInsumo(${index})">
+❌
+</button>
+
+</td>
+`;
+
+tabla.appendChild(fila);
+
+});
+
+guardar();
+
+}
+
+function agregarInsumo(){
+
+const codigo =
+document.getElementById('codigoInsumo').value.trim();
+
+const nombre =
+document.getElementById('nombreInsumo').value.trim();
+
+const stock =
+parseInt(document.getElementById('stockInsumo').value);
+
+const costo =
+parseFloat(document.getElementById('costoInsumo').value);
+
+const unidad =
+document.getElementById('unidadInsumo').value;
+
+if(
+codigo === '' ||
+nombre === '' ||
+isNaN(stock) ||
+isNaN(costo)
+){
+alert('Complete todos los campos');
+return;
+}
+
+if(editandoInsumo >= 0){
+
+insumos[editandoInsumo] = {
+codigo,
+nombre,
+stock,
+unidad,
+costo
+};
+
+editandoInsumo = -1;
+
+}else{
+
+insumos.push({
+codigo,
+nombre,
+stock,
+unidad,
+costo
+});
+
+}
+
+actualizarInsumos();
+
+document.getElementById('codigoInsumo').value='';
+document.getElementById('nombreInsumo').value='';
+document.getElementById('stockInsumo').value='';
+document.getElementById('costoInsumo').value='';
+
+}
+
+function editarInsumo(index){
+
+const i = insumos[index];
+
+document.getElementById('codigoInsumo').value =
+i.codigo;
+
+document.getElementById('nombreInsumo').value =
+i.nombre;
+
+document.getElementById('stockInsumo').value =
+i.stock;
+
+document.getElementById('costoInsumo').value =
+i.costo;
+
+document.getElementById('unidadInsumo').value = i.unidad;
+
+editandoInsumo = index;
+
+}
+
+function eliminarInsumo(index){
+
+if(confirm('¿Eliminar insumo?')){
+
+insumos.splice(index,1);
+
+actualizarInsumos();
+
+}
+
+}
+
+function consumirInsumo(codigo,cantidad){
+
+const insumo =
+insumos.find(i => i.codigo === codigo);
+
+if(!insumo) return false;
+
+if(insumo.stock < cantidad){
+return false;
+}
+
+insumo.stock -= cantidad;
+
+guardar();
+actualizarInsumos();
+
+return true;
+
+}
+
+// =====================
+// INVENTARIO
+// =====================
+
+function actualizarProductos(){
+
+const tabla =
+document.getElementById('tablaProductos');
+
+tabla.innerHTML='';
+
+inventario.forEach((p,index)=>{
+
+const fila =
+document.createElement('tr');
+
+if(p.cantidad <= 2){
+fila.classList.add('alerta');
+}
+
+const utilidad =
+p.venta - p.compra;
+
+fila.innerHTML = `
+<td>${p.nombre}</td>
+<td>${p.cantidad}</td>
+<td>$${p.venta.toFixed(2)}</td>
+<td>$${utilidad.toFixed(2)}</td>
+
+<td>
+
+<button class="btn-warning"
+onclick="editarProducto(${index})">
+✏️
+</button>
+
+<button class="btn-danger"
+onclick="eliminarProducto(${index})">
+❌
+</button>
+
+</td>
+`;
+
+tabla.appendChild(fila);
+
+});
+
+actualizarSelect();
+actualizarResumen();
+actualizarInsumos();
+guardar();
+
+}
+
+function agregarProducto(){
+
+const nombre =
+document.getElementById('nombre').value.trim();
+
+const cantidad =
+parseInt(document.getElementById('cantidad').value);
+
+const compra =
+parseFloat(document.getElementById('compra').value);
+
+const venta =
+parseFloat(document.getElementById('venta').value);
+
+if(
+nombre === '' ||
+isNaN(cantidad) ||
+isNaN(compra) ||
+isNaN(venta)
+){
+alert('Complete todos los campos');
+return;
+}
+
+if(editando >= 0){
+
+inventario[editando] = {
+nombre,
+cantidad,
+compra,
+venta
+};
+
+editando = -1;
+
+}else{
+
+const nuevo = {
+  nombre,
+  cantidad,
+  compra,
+  venta
+};
+
+inventario.push(nuevo);
+guardarProductoFirebase(nuevo);
+}
+
+actualizarProductos();
+
+document.getElementById('nombre').value='';
+document.getElementById('cantidad').value='';
+document.getElementById('compra').value='';
+document.getElementById('venta').value='';
+
+}
+
+function editarProducto(index){
+
+const p = inventario[index];
+
+document.getElementById('nombre').value =
+p.nombre;
+
+document.getElementById('cantidad').value =
+p.cantidad;
+
+document.getElementById('compra').value =
+p.compra;
+
+document.getElementById('venta').value =
+p.venta;
+
+editando = index;
+
+}
+
+function eliminarProducto(index){
+
+if(confirm('¿Eliminar producto?')){
+
+inventario.splice(index,1);
+
+actualizarProductos();
+
+}
+
+}
+
+function actualizarSelect(){
+
+const select =
+document.getElementById('productoVenta');
+
+select.innerHTML='';
+
+inventario.forEach((p,index)=>{
+
+if(p.cantidad > 0){
+
+const option =
+document.createElement('option');
+
+option.value = index;
+
+option.textContent =
+`${p.nombre} - Stock ${p.cantidad}`;
+
+select.appendChild(option);
+
+}
+
+});
+
+}
+
+// =====================
+// PROVEEDORES
+// =====================
+
+function agregarProveedor(){
+
+const nombre =
+document.getElementById('nombreProveedor').value.trim();
+
+const telefono =
+document.getElementById('telefonoProveedor').value.trim();
+
+if(nombre === ''){
+alert('Ingrese proveedor');
+return;
+}
+
+proveedores.push({
+nombre,
+telefono
+});
+
+guardar();
+
+actualizarProveedores();
+
+document.getElementById('nombreProveedor').value='';
+document.getElementById('telefonoProveedor').value='';
+
+}
+
+function actualizarProveedores(){
+
+const select =
+document.getElementById('selectProveedor');
+
+select.innerHTML='';
+
+proveedores.forEach((p,index)=>{
+
+const option =
+document.createElement('option');
+
+option.value = index;
+
+option.textContent =
+`${p.nombre} - ${p.telefono}`;
+
+select.appendChild(option);
+
+});
+
+actualizarResumen();
+
+}
+
+function registrarEntrada(){
+
+const proveedorIndex =
+document.getElementById('selectProveedor').value;
+
+const producto =
+document.getElementById('nuevoProducto').value.trim();
+
+const cantidad =
+parseInt(document.getElementById('cantidadNueva').value);
+
+const costo =
+parseFloat(document.getElementById('costoNuevo').value);
+
+const venta =
+parseFloat(document.getElementById('ventaNueva').value);
+
+if(
+producto === '' ||
+isNaN(cantidad) ||
+isNaN(costo) ||
+isNaN(venta)
+){
+alert('Complete todos los campos');
+return;
+}
+
+const proveedor =
+proveedores[proveedorIndex];
+
+const existente =
+inventario.find(p=>
+p.nombre.toLowerCase()
+=== producto.toLowerCase()
+);
+
+if(existente){
+
+existente.cantidad += cantidad;
+existente.compra = costo;
+existente.venta = venta;
+
+}else{
+
+inventario.push({
+nombre:producto,
+cantidad,
+compra:costo,
+venta
+});
+
+}
+
+entradas.push({
+proveedor:proveedor.nombre,
+producto,
+cantidad,
+fecha:new Date().toLocaleString()
+});
+
+guardar();
+
+actualizarProductos();
+actualizarEntradas();
+
+document.getElementById('nuevoProducto').value='';
+document.getElementById('cantidadNueva').value='';
+document.getElementById('costoNuevo').value='';
+document.getElementById('ventaNueva').value='';
+
+}
+
+function actualizarEntradas(){
+
+const tabla =
+document.getElementById('tablaEntradas');
+
+tabla.innerHTML='';
+
+[...entradas].reverse().forEach(e=>{
+
+const fila =
+document.createElement('tr');
+
+fila.innerHTML = `
+<td>${e.proveedor}</td>
+<td>${e.producto}</td>
+<td>${e.cantidad}</td>
+<td>${e.fecha}</td>
+`;
+
+tabla.appendChild(fila);
+
+});
+
+}
+
+// =====================
+// VENTAS
+// =====================
+
+function agregarVenta(){
+
+const index =
+document.getElementById('productoVenta').value;
+
+const cantidad =
+parseInt(document.getElementById('cantidadVenta').value);
+
+const producto =
+inventario[index];
+
+if(
+isNaN(cantidad) ||
+cantidad <= 0
+){
+alert('Cantidad inválida');
+return;
+}
+
+if(cantidad > producto.cantidad){
+alert('Stock insuficiente');
+return;
+}
+
+carrito.push({
+index,
+nombre:producto.nombre,
+cantidad,
+subtotal:cantidad * producto.venta
+});
+
+actualizarVenta();
+
+document.getElementById('cantidadVenta').value='';
+
+}
+
+function actualizarVenta(){
+
+const tabla =
+document.getElementById('tablaVenta');
+
+tabla.innerHTML='';
+
+let total = 0;
+
+carrito.forEach(item=>{
+
+total += item.subtotal;
+
+const fila =
+document.createElement('tr');
+
+fila.innerHTML = `
+<td>${item.nombre}</td>
+<td>${item.cantidad}</td>
+<td>$${item.subtotal.toFixed(2)}</td>
+`;
+
+tabla.appendChild(fila);
+
+});
+
+document.getElementById(
+'totalVenta'
+).textContent =
+`Total: $${total.toFixed(2)}`;
+
+}
+
+function finalizarVenta(){
+
+if(carrito.length === 0){
+alert('No hay productos');
+return;
+}
+
+const total =
+carrito.reduce((acc,item)=>
+acc + item.subtotal,0);
+
+const pago =
+parseFloat(document.getElementById('pago').value);
+
+if(
+isNaN(pago) ||
+pago < total
+){
+alert('Dinero insuficiente');
+return;
+}
+
+let utilidad = 0;
+
+carrito.forEach(item=>{
+
+inventario[item.index].cantidad -= item.cantidad;
+
+const producto =
+inventario[item.index];
+
+utilidad +=
+(producto.venta - producto.compra)
+* item.cantidad;
+
+});
+
+const cambio =
+pago - total;
+
+ultimaVentaProductos =
+[...carrito];
+
+historial.push({
+
+fecha:new Date().toLocaleString(),
+total,
+pago,
+cambio,
+utilidad
+
+});
+
+// CAJA DEL DIA
+
+cajaDia.ventas += total;
+cajaDia.ganancia += utilidad;
+cajaDia.caja += total;
+
+guardar();
+
+document.getElementById(
+'resultado'
+).innerHTML = `
+
+💰 Total: $${total.toFixed(2)}<br>
+💵 Pago: $${pago.toFixed(2)}<br>
+🪙 Cambio: $${cambio.toFixed(2)}<br>
+📈 Ganancia: $${utilidad.toFixed(2)}
+
+`;
+
+carrito = [];
+
+actualizarVenta();
+actualizarProductos();
+actualizarHistorial();
+
+document.getElementById('pago').value='';
+
+alert('✅ Venta realizada');
+
+}
+
+// =====================
+// FACTURA
+// =====================
+
+function imprimirFactura(){
+
+if(historial.length === 0){
+alert('No hay ventas');
+return;
+}
+
+const venta =
+historial[historial.length - 1];
+
+let productosHTML = '';
+
+ultimaVentaProductos.forEach(item=>{
+
+productosHTML += `
+<tr>
+<td>${item.nombre}</td>
+<td>${item.cantidad}</td>
+<td>$${item.subtotal.toFixed(2)}</td>
+</tr>
+`;
+
+});
+
+const ventana =
+window.open('','','width=400,height=700');
+
+ventana.document.write(`
+
+<html>
+
+<head>
+
+<title>Factura</title>
+
+<style>
+
+body{
+font-family:Arial;
+padding:20px;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+th,td{
+border:1px solid black;
+padding:8px;
+text-align:center;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>🎨 IMPRESIONARTE</h2>
+
+<p>Fecha: ${venta.fecha}</p>
+
+<table>
+
+<thead>
+<tr>
+<th>Producto</th>
+<th>Cantidad</th>
+<th>Total</th>
+</tr>
+</thead>
+
+<tbody>
+
+${productosHTML}
+
+</tbody>
+
+</table>
+
+<h3>Total: $${venta.total.toFixed(2)}</h3>
+<h3>Pago: $${venta.pago.toFixed(2)}</h3>
+<h3>Cambio: $${venta.cambio.toFixed(2)}</h3>
+
+<p>Gracias por su compra</p>
+
+</body>
+
+</html>
+
+`);
+
+ventana.document.close();
+
+ventana.print();
+
+}
+
+// =====================
+// HISTORIAL
+// =====================
+
+function actualizarHistorial(){
+
+const tabla =
+document.getElementById('tablaHistorial');
+
+tabla.innerHTML='';
+
+historial.forEach(v=>{
+
+const fila =
+document.createElement('tr');
+
+fila.innerHTML = `
+<td>${v.fecha}</td>
+<td>$${v.total.toFixed(2)}</td>
+<td>$${v.pago.toFixed(2)}</td>
+<td>$${v.cambio.toFixed(2)}</td>
+<td>$${v.utilidad.toFixed(2)}</td>
+`;
+
+tabla.appendChild(fila);
+
+});
+
+actualizarResumen();
+
+}
+
+// =====================
+// CIERRES
+// =====================
+
+function cerrarCaja(){
+
+if(cajaDia.ventas <= 0){
+alert('No hay ventas hoy');
+return;
+}
+
+cierres.push({
+
+fecha:new Date().toLocaleString(),
+ventas:cajaDia.ventas,
+ganancia:cajaDia.ganancia,
+caja:cajaDia.caja
+
+});
+
+cajaDia = {
+ventas:0,
+ganancia:0,
+caja:0
+};
+
+guardar();
+
+actualizarResumen();
+actualizarCierres();
+
+alert('🏦 Caja cerrada');
+
+}
+
+function actualizarCierres(){
+
+const tabla =
+document.getElementById('tablaCierres');
+
+tabla.innerHTML='';
+
+[...cierres].reverse().forEach(c=>{
+
+const fila =
+document.createElement('tr');
+
+fila.innerHTML = `
+<td>${c.fecha}</td>
+<td>$${c.ventas.toFixed(2)}</td>
+<td>$${c.ganancia.toFixed(2)}</td>
+<td>$${c.caja.toFixed(2)}</td>
+`;
+
+tabla.appendChild(fila);
+
+});
+
+}
+
+// =====================
+// BUSCAR
+// =====================
+
+function buscar(){
+
+const texto =
+document.getElementById('buscar')
+.value
+.toLowerCase();
+
+const filas =
+document.querySelectorAll('#tablaProductos tr');
+
+filas.forEach(fila=>{
+
+fila.style.display =
+fila.textContent
+.toLowerCase()
+.includes(texto)
+? ''
+: 'none';
+
+});
+
+}
+
+// =====================
+// LIMPIAR
+// =====================
+
+function limpiarVentas(){
+
+if(carrito.length === 0){
+alert('No hay venta');
+return;
+}
+
+carrito = [];
+
+actualizarVenta();
+
+document.getElementById(
+'totalVenta'
+).textContent =
+'Total: $0';
+
+document.getElementById(
+'resultado'
+).innerHTML = '';
+
+document.getElementById(
+'pago'
+).value='';
+
+alert('🧹 Venta limpiada');
+
+}
+
+function limpiarHistorial(){
+
+if(confirm('¿Eliminar historial?')){
+
+historial = [];
+
+guardar();
+
+actualizarHistorial();
+
+}
+
+}
+
+function reiniciarTodo(){
+
+if(confirm('¿Reiniciar TODO el sistema?')){
+
+inventario = [];
+historial = [];
+proveedores = [];
+entradas = [];
+cierres = [];
+
+cajaDia = {
+ventas:0,
+ganancia:0,
+caja:0
+};
+
+carrito = [];
+
+localStorage.clear();
+
+actualizarProductos();
+actualizarVenta();
+actualizarHistorial();
+actualizarProveedores();
+actualizarEntradas();
+actualizarCierres();
+actualizarResumen();
+
+}
+
+}
+
+// =====================
+// EVENTOS
+// =====================
+
+document.getElementById('btnAgregar')
+.addEventListener('click',agregarProducto);
+
+document.getElementById('btnAgregarVenta')
+.addEventListener('click',agregarVenta);
+
+document.getElementById('btnFinalizar')
+.addEventListener('click',finalizarVenta);
+
+document.getElementById('buscar')
+.addEventListener('keyup',buscar);
+
+document.getElementById('btnAgregarVenta')
+.addEventListener('click', agregarVenta);
+
+// =====================
+// INICIO
+// =====================
+
+cargarInventarioFirebase();
+actualizarProductos();
+actualizarHistorial();
+actualizarProveedores();
+actualizarEntradas();
+actualizarCierres();
+actualizarResumen();
+
+</script>
+
+</body>
+</html>
