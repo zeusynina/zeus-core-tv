@@ -1,4 +1,4 @@
-[INVENTARIO JC.html](https://github.com/user-attachments/files/28433744/INVENTARIO.JC.html)
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
